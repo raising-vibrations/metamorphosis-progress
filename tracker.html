@@ -66,7 +66,67 @@
     .post-text { white-space: pre-wrap; font-size: 0.9rem; max-width: 70%; }
     .template-editor { margin-bottom: 2rem; }
     .template-editor textarea { width: 100%; min-height: 100px; padding: 10px; border-radius: 8px; border: 2px solid #e0d8e6; }
-    .completion-checkbox { margin-left: 5px; }
+    .completion-checkbox { display: none; }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .checkbox-custom {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #e0d8e6;
+      border-radius: 4px;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .completion-checkbox:checked + .checkbox-custom {
+      background: #28a745;
+      border-color: #28a745;
+    }
+    .checkbox-custom::after {
+      content: '✔';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      color: white;
+      font-size: 12px;
+      transition: transform 0.2s ease;
+    }
+    .completion-checkbox:checked + .checkbox-custom::after {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .notifications { 
+      margin-bottom: 2rem; 
+      background: #f8f5f2; 
+      padding: 1.5rem; 
+      border-radius: 12px; 
+    }
+    .notification-list { 
+      display: grid; 
+      gap: 0.5rem; 
+    }
+    .notification-item { 
+      padding: 1rem; 
+      background: white; 
+      border-radius: 8px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+    }
+    .clear-button { 
+      padding: 6px 12px; 
+      background: #e9b2c2; 
+      color: #2d1b3f; 
+      border: none; 
+      border-radius: 6px; 
+      cursor: pointer; 
+    }
+    .clear-button:hover {
+      filter: brightness(1.1);
+    }
   </style>
 </head>
 <body>
@@ -80,6 +140,11 @@
     </div>
 
     <div id="tracker" class="tab-content active">
+      <div class="notifications" id="notifications">
+        <h3>Client Completion Notifications</h3>
+        <div class="notification-list" id="notification-list"></div>
+      </div>
+
       <form id="client-form">
         <input type="text" id="name" placeholder="Client Name" required />
         <input type="date" id="startDate" required />
@@ -266,6 +331,10 @@ Looking forward to walking this path with you. Let me know if you have any quest
       return JSON.parse(localStorage.getItem('clients') || '[]');
     }
 
+    function loadClientProgress() {
+      return JSON.parse(localStorage.getItem('clientProgress') || '{}');
+    }
+
     function generatePosts(client) {
       const templates = loadTemplates();
       const posts = [];
@@ -324,6 +393,36 @@ Looking forward to walking this path with you. Let me know if you have any quest
       postsList.innerHTML = '';
     }
 
+    function renderNotifications() {
+      const notificationList = document.getElementById('notification-list');
+      const clientProgress = loadClientProgress();
+      notificationList.innerHTML = '';
+      
+      Object.entries(clientProgress).forEach(([clientName, progress]) => {
+        Object.entries(progress).forEach(([step, completed]) => {
+          if (completed) {
+            const div = document.createElement('div');
+            div.className = 'notification-item';
+            div.innerHTML = `
+              <span>${clientName} completed Step ${step} - ${phaseMap[step]}</span>
+              <button class="clear-button" onclick="clearNotification('${clientName}', ${step})">Clear</button>
+            `;
+            notificationList.appendChild(div);
+          }
+        });
+      });
+    }
+
+    function clearNotification(clientName, step) {
+      const clientProgress = loadClientProgress();
+      delete clientProgress[clientName][step];
+      if (Object.keys(clientProgress[clientName]).length === 0) {
+        delete clientProgress[clientName];
+      }
+      localStorage.setItem('clientProgress', JSON.stringify(clientProgress));
+      renderNotifications();
+    }
+
     function renderClients() {
       const clients = loadClients();
       tableBody.innerHTML = '';
@@ -350,7 +449,11 @@ Looking forward to walking this path with you. Let me know if you have any quest
               <div class="progress-fill" style="width: ${percent}%;">${percent}%</div>
             </div>
             ${[1,2,3,4,5,6,7].map(step => `
-              <label><input type="checkbox" class="completion-checkbox" onchange="updateCompletion(${index}, ${step}, this.checked)" ${completedSteps[step] ? 'checked' : ''}> Step ${step}</label>
+              <label class="checkbox-label">
+                <input type="checkbox" class="completion-checkbox" onchange="updateCompletion(${index}, ${step}, this.checked)" ${completedSteps[step] ? 'checked' : ''}>
+                <span class="checkbox-custom"></span>
+                Step ${step}
+              </label>
             `).join('')}
           </td>
           <td>
@@ -359,6 +462,7 @@ Looking forward to walking this path with you. Let me know if you have any quest
         `;
         tableBody.appendChild(row);
       });
+      renderNotifications();
     }
 
     form.addEventListener('submit', (e) => {
@@ -377,7 +481,9 @@ Looking forward to walking this path with you. Let me know if you have any quest
       form.reset();
     });
 
-    renderClients();
+    document.addEventListener('DOMContentLoaded', () => {
+      renderClients();
+    });
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925926c4bba8d9b1',t:'MTc0Mjg1MDU4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
