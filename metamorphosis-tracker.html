@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Metamorphosis Client Tracker</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #f0ebeb, #e1dcdc);
+      color: #2d1b3f;
+      min-height: 100vh;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 2.5rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(45, 27, 63, 0.1);
+      backdrop-filter: blur(4px);
+    }
+    h1 { text-align: center; margin-bottom: 2rem; color: #2d1b3f; font-size: 2.2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
+    .tab-nav { display: flex; gap: 1rem; margin-bottom: 2rem; justify-content: center; }
+    .tab-button { padding: 10px 20px; border: none; border-radius: 8px; background: #f8f5f2; color: #2d1b3f; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+    .tab-button.active { background: linear-gradient(45deg, #2d1b3f, #4a2f63); color: white; }
+    .tab-button:hover:not(.active) { background: #e0d8e6; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+      background: #f8f5f2;
+      padding: 1.5rem;
+      border-radius: 12px;
+    }
+    form input, form select, form button {
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 2px solid #e0d8e6;
+      font-family: inherit;
+      background: white;
+      transition: all 0.3s ease;
+    }
+    form input:focus, form select:focus { outline: none; border-color: #8e729d; box-shadow: 0 0 5px rgba(142, 114, 157, 0.3); }
+    form button { background: linear-gradient(45deg, #2d1b3f, #4a2f63); color: white; border: none; font-weight: 600; letter-spacing: 1px; cursor: pointer; }
+    form button:hover { background: linear-gradient(45deg, #4a2f63, #6b468f); transform: translateY(-2px); }
+    table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+    th { padding: 15px; background: #f8f5f2; color: #2d1b3f; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+    td { padding: 15px; background: white; border-radius: 8px; }
+    tr:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    .progress-bar { background: #e0d8e6; border-radius: 10px; overflow: hidden; height: 20px; margin-top: 5px; }
+    .progress-fill { background: linear-gradient(90deg, #8e729d, #4a2f63); height: 100%; text-align: right; color: white; padding-right: 8px; font-size: 0.9rem; transition: width 0.5s ease; }
+    .delete-button { background: linear-gradient(45deg, #e9b2c2, #f2c9d3); color: #2d1b3f; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+    .delete-button:hover { transform: scale(1.05); filter: brightness(1.1); }
+    select.phase-dropdown { padding: 6px; margin-top: 8px; border-radius: 6px; border: 2px solid #e0d8e6; width: 100%; }
+    .worksheet-list, .posts-list { display: grid; gap: 1rem; }
+    .worksheet-item, .post-item { background: #f8f5f2; padding: 1rem; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .worksheet-button, .copy-button { padding: 8px 15px; background: linear-gradient(45deg, #8e729d, #6b468f); color: white; border: none; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; }
+    .worksheet-button:hover, .copy-button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    .post-text { white-space: pre-wrap; font-size: 0.9rem; max-width: 70%; }
+    .template-editor { margin-bottom: 2rem; }
+    .template-editor textarea { width: 100%; min-height: 100px; padding: 10px; border-radius: 8px; border: 2px solid #e0d8e6; }
+    .completion-checkbox { margin-left: 5px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🦋 Metamorphosis Client Tracker</h1>
+
+    <div class="tab-nav">
+      <button class="tab-button active" data-tab="tracker">Client Tracker</button>
+      <button class="tab-button" data-tab="worksheets">Worksheets</button>
+      <button class="tab-button" data-tab="posts">Client Posts</button>
+    </div>
+
+    <div id="tracker" class="tab-content active">
+      <form id="client-form">
+        <input type="text" id="name" placeholder="Client Name" required />
+        <input type="date" id="startDate" required />
+        <select id="phase">
+          <option value="1">🐛 Step 1 - Setting Intentions</option>
+          <option value="2">🐛 Step 2 - Pluto Worksheet</option>
+          <option value="3">🐛 Step 3 - Pluto Call</option>
+          <option value="4">🦋 Step 4 - Shadow Work</option>
+          <option value="5">🦋 Step 5 - Growth & Integration</option>
+          <option value="6">🐝 Step 6 - Nodal Integration</option>
+          <option value="7">🐝 Step 7 - Completion</option>
+        </select>
+        <select id="pluto">
+          <option value="1">Pluto in 1st House</option>
+          <option value="2">Pluto in 2nd House</option>
+          <option value="3">Pluto in 3rd House</option>
+          <option value="4">Pluto in 4th House</option>
+          <option value="5">Pluto in 5th House</option>
+          <option value="6">Pluto in 6th House</option>
+          <option value="7">Pluto in 7th House</option>
+          <option value="8">Pluto in 8th House</option>
+          <option value="9">Pluto in 9th House</option>
+          <option value="10">Pluto in 10th House</option>
+          <option value="11">Pluto in 11th House</option>
+          <option value="12">Pluto in 12th House</option>
+        </select>
+        <button type="submit">Add Client</button>
+      </form>
+
+      <table id="client-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Start Date</th>
+            <th>Phase</th>
+            <th>Pluto</th>
+            <th>Progress</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="worksheets" class="tab-content">
+      <div class="worksheet-list">
+        <div class="worksheet-item">
+          <span>Step 1 - Setting Intentions</span>
+          <button class="worksheet-button" onclick="viewWorksheet('Setting Intentions.pdf')">View PDF</button>
+        </div>
+        <div class="worksheet-item"><span>Step 2 - Pluto Worksheet</span><button class="worksheet-button" disabled>Coming Soon</button></div>
+        <div class="worksheet-item"><span>Step 3 - Pluto Call Notes</span><button class="worksheet-button" disabled>Coming Soon</button></div>
+        <div class="worksheet-item"><span>Step 4 - Shadow Work</span><button class="worksheet-button" disabled>Coming Soon</button></div>
+        <div class="worksheet-item"><span>Step 5 - Growth & Integration</span><button class="worksheet-button" disabled>Coming Soon</button></div>
+        <div class="worksheet-item"><span>Step 6 - Nodal Axis</span><button class="worksheet-button" disabled>Coming Soon</button></div>
+        <div class="worksheet-item"><span>Step 7 - Completion</span><button class="worksheet-button" disabled>Coming Soon</button></div>
+      </div>
+    </div>
+
+    <div id="posts" class="tab-content">
+      <div class="template-editor">
+        <h3>Edit Templates</h3>
+        <select id="template-select">
+          <option value="1">Step 1 Welcome</option>
+          <option value="2">Step 2 Welcome</option>
+          <option value="3">Step 3 Welcome</option>
+          <option value="timeline">Program Timeline</option>
+        </select>
+        <textarea id="template-text"></textarea>
+        <button onclick="saveTemplate()">Save Template</button>
+      </div>
+      <div class="posts-list" id="posts-list"></div>
+    </div>
+  </div>
+
+  <script>
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+        button.classList.add('active');
+        document.getElementById(button.dataset.tab).classList.add('active');
+      });
+    });
+
+    function viewWorksheet(filename) {
+      window.open(filename, '_blank');
+    }
+
+    const defaultTemplates = {
+      1: `STEP 1: SETTING YOUR INTENTIONS
+Welcome to your first step in the Metamorphosis Program, [NAME]!
+This initial phase focuses on identifying what you want to accomplish during our time together. Clear intentions will help guide our work and give you a reference point to measure your progress.
+WHAT TO EXPECT IN STEP 1
+Personal Reflection: You'll consider what areas of your life you want to transform and why these changes matter to you.
+Focus on What Resonates: Some questions in the worksheet will feel more relevant than others – concentrate on those that apply to your situation.
+Room for Adjustment: As we progress, you might refine your goals. This is normal and shows your growing awareness.
+YOUR TASK LIST
+Download and complete the Intentions Worksheet (attached below)
+Set aside 2-3 days to work through the questions thoughtfully
+Message me in Slack once you've finished, highlighting 2-3 key insights
+The work you do now creates a roadmap for our sessions together. Taking time with these reflections will make our future work more effective and targeted to your needs.
+If you have questions as you work through the worksheet, please reach out. I'm here to help make this process clear and valuable for you.`,
+      2: `STEP 2: UNDERSTANDING YOUR CORE PATTERNS
+Welcome to the second step of your Metamorphosis Program, [NAME]!
+In this phase, we'll examine the unconscious patterns that influence your decisions and reactions. By identifying these patterns through your Pluto placement, you'll gain valuable insight into why you respond to situations in certain ways.
+WHAT TO EXPECT IN STEP 2
+Self-Observation: You'll begin to notice recurring themes in how you handle challenges and seek security.
+Pattern Recognition: The worksheet will help you connect your behaviors to deeper emotional needs and drives.
+Increased Awareness: Simply noticing these patterns is the first step toward having more choice in how you respond.
+YOUR TASK LIST
+Listen to your Pluto Audio (attached below)
+Complete the Unconscious Security Patterns Worksheet
+Take 2-3 days to observe these patterns in your daily life
+Share your observations in Slack when you're ready
+This work may bring up surprising insights about yourself. Remember that awareness without judgment is key—we're simply gathering information about how you operate.`,
+      3: `# STEP 3: YOUR PERSONALIZED PLUTO INTEGRATION SESSION
+**Moving forward in your Metamorphosis Program, [NAME]**
+After completing your worksheet and self-observation, it's time for us to meet one-on-one to discuss your discoveries and create a practical plan for working with these patterns.
+## WHAT TO EXPECT IN THIS SESSION
+1. **Review of Your Insights**: We'll discuss the key patterns you've identified through your worksheet and observations.
+2. **Chart Analysis**: We'll examine your Pluto placement in your birth chart to provide additional context for your patterns.
+3. **Action Planning**: You'll leave with specific strategies to address the patterns that may be limiting you.
+## YOUR TASK LIST
+- **Book your 1:1 session** using the link below
+- **Come prepared** with your completed worksheet and any questions
+- **Allow 60 minutes** for our conversation
+**Schedule your session here:**
+https://scheduler.zoom.us/raising-vibrations-simon/metamorphosis-pluto-session-zcj9mlex
+The insights from this session will form an important foundation for the remainder of your program. Please select a time when you can be in a quiet, private space without distractions.
+If you need to reschedule, please do so at least 24 hours in advance.`,
+      timeline: `:star2: START DATE OF METAMORPHOSIS PROGRAM :star2:
+:point_right::skin-tone-2: Start Date: [START_DATE]
+:point_right::skin-tone-2: Start of your 2nd Month: [MONTH_2]
+:point_right::skin-tone-2: Start of your 3rd Month: [MONTH_3]
+:zap::butterfly: Completion Date: [COMPLETION_DATE] (Subject to change if pauses occur)
+These dates outline your timeline in the program, but remember—this is your journey, and we’ll adjust as needed to ensure you get the most out of it!
+Looking forward to walking this path with you. Let me know if you have any questions!`
+    };
+
+    function loadTemplates() {
+      return JSON.parse(localStorage.getItem('postTemplates') || JSON.stringify(defaultTemplates));
+    }
+
+    function saveTemplates(templates) {
+      localStorage.setItem('postTemplates', JSON.stringify(templates));
+    }
+
+    const templateSelect = document.getElementById('template-select');
+    const templateText = document.getElementById('template-text');
+    templateSelect.addEventListener('change', () => {
+      const templates = loadTemplates();
+      templateText.value = templates[templateSelect.value] || '';
+    });
+    templateText.value = loadTemplates()[1];
+
+    function saveTemplate() {
+      const templates = loadTemplates();
+      templates[templateSelect.value] = templateText.value;
+      saveTemplates(templates);
+    }
+
+    const form = document.getElementById('client-form');
+    const tableBody = document.querySelector('#client-table tbody');
+    const postsList = document.getElementById('posts-list');
+
+    const phaseMap = {
+      1: "🐛 Step 1 - Setting Intentions",
+      2: "🐛 Step 2 - Pluto Worksheet",
+      3: "🐛 Step 3 - Pluto Call",
+      4: "🦋 Step 4 - Shadow Work",
+      5: "🦋 Step 5 - Growth & Integration",
+      6: "🐝 Step 6 - Nodal Integration",
+      7: "🐝 Step 7 - Completion"
+    };
+
+    function saveClients(clients) {
+      localStorage.setItem('clients', JSON.stringify(clients));
+    }
+
+    function loadClients() {
+      return JSON.parse(localStorage.getItem('clients') || '[]');
+    }
+
+    function generatePosts(client) {
+      const templates = loadTemplates();
+      const posts = [];
+      if (client.phase in templates) {
+        posts.push({
+          title: `Welcome Post for ${client.name} (Step ${client.phase})`,
+          text: templates[client.phase].replace('[NAME]', client.name)
+        });
+      }
+      return posts;
+    }
+
+    function renderPosts(client) {
+      postsList.innerHTML = '';
+      const posts = generatePosts(client);
+      posts.forEach(post => {
+        const div = document.createElement('div');
+        div.className = 'post-item';
+        div.innerHTML = `
+          <div class="post-text">${post.title}\n${post.text}</div>
+          <button class="copy-button">Copy</button>
+        `;
+        const button = div.querySelector('.copy-button');
+        button.addEventListener('click', () => {
+          navigator.clipboard.writeText(post.text).then(() => {
+            button.textContent = 'Copied!';
+            setTimeout(() => button.textContent = 'Copy', 2000);
+          });
+        });
+        postsList.appendChild(div);
+      });
+    }
+
+    function updateClientPhase(index, newPhase) {
+      const clients = loadClients();
+      clients[index].phase = parseInt(newPhase);
+      saveClients(clients);
+      renderClients();
+      postsList.innerHTML = '';
+      renderPosts(clients[index]);
+    }
+
+    function updateCompletion(index, step, checked) {
+      const clients = loadClients();
+      clients[index].completed = clients[index].completed || {};
+      clients[index].completed[step] = checked;
+      saveClients(clients);
+      renderClients();
+    }
+
+    function deleteClient(index) {
+      const clients = loadClients();
+      clients.splice(index, 1);
+      saveClients(clients);
+      renderClients();
+      postsList.innerHTML = '';
+    }
+
+    function renderClients() {
+      const clients = loadClients();
+      tableBody.innerHTML = '';
+      clients.forEach((client, index) => {
+        const completedSteps = client.completed || {};
+        const completedCount = Object.values(completedSteps).filter(Boolean).length;
+        const percent = Math.floor((completedCount / 7) * 100);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${client.name}</td>
+          <td>${client.startDate}</td>
+          <td>
+            ${phaseMap[client.phase]}
+            <br>
+            <select class="phase-dropdown" onchange="updateClientPhase(${index}, this.value)">
+              ${Object.entries(phaseMap).map(([val, label]) =>
+                `<option value="${val}" ${client.phase == val ? 'selected' : ''}>${label}</option>`
+              ).join('')}
+            </select>
+          </td>
+          <td>Pluto in ${client.pluto}th House</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${percent}%;">${percent}%</div>
+            </div>
+            ${[1,2,3,4,5,6,7].map(step => `
+              <label><input type="checkbox" class="completion-checkbox" onchange="updateCompletion(${index}, ${step}, this.checked)" ${completedSteps[step] ? 'checked' : ''}> Step ${step}</label>
+            `).join('')}
+          </td>
+          <td>
+            <button class="delete-button" onclick="deleteClient(${index})">Remove</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      const startDate = document.getElementById('startDate').value;
+      const phase = parseInt(document.getElementById('phase').value);
+      const pluto = document.getElementById('pluto').value;
+      const clients = loadClients();
+      const newClient = { name, startDate, phase, pluto, completed: {} };
+      clients.push(newClient);
+      saveClients(clients);
+      renderClients();
+      postsList.innerHTML = '';
+      renderPosts(newClient);
+      form.reset();
+    });
+
+    renderClients();
+  </script>
+</body>
+</html>
