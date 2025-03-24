@@ -222,13 +222,13 @@
       transition: transform 0.4s ease;
     }
     
-    .step-icon img {
+    .step-icon img, .step-icon svg {
       width: 24px;
       height: 24px;
       animation: wiggle 2s infinite ease-in-out;
     }
     
-    .step-item:hover .step-icon img {
+    .step-item:hover .step-icon img, .step-item:hover .step-icon svg {
       animation: bounce 0.5s ease;
     }
     
@@ -275,12 +275,12 @@
     .completion-container {
       display: flex;
       align-items: center;
-      pointer-events: auto; /* Ensure clicks are registered */
+      pointer-events: auto;
     }
     
     .completion-checkbox { 
       display: none; 
-      pointer-events: auto; /* Ensure the input can be interacted with */
+      pointer-events: auto;
     }
     
     .completion-label {
@@ -289,7 +289,7 @@
       gap: 0.3rem;
       cursor: pointer;
       color: var(--deep-blue);
-      pointer-events: auto; /* Ensure clicks are registered */
+      pointer-events: auto;
     }
     
     .checkbox-custom {
@@ -299,7 +299,7 @@
       border-radius: 4px;
       position: relative;
       transition: all 0.3s ease;
-      pointer-events: none; /* Prevent the pseudo-element from blocking clicks */
+      pointer-events: none;
     }
     
     .completion-checkbox:checked + .checkbox-custom {
@@ -340,7 +340,7 @@
       h3 { font-size: 1.1rem; }
       .header .logo-img { max-width: 140px; }
       .step-icon { width: 40px; height: 40px; }
-      .step-icon img { width: 20px; height: 20px; }
+      .step-icon img, .step-icon svg { width: 20px; height: 20px; }
       .download-button { padding: 5px 10px; font-size: 0.85rem; }
       .progress-percentage-bubble { font-size: 0.8rem; padding: 3px 8px; }
     }
@@ -377,10 +377,16 @@
   </footer>
 
   <script>
+    const telephoneIcon = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>
+    `;
+
     const phaseMap = {
       1: { title: "Step 1 - Setting Intentions", desc: "Identify what you want to accomplish.", file: "Setting Intentions.pdf", icon: "./caterpillar.svg", stage: "caterpillar" },
       2: { title: "Step 2 - Understanding Your Core Patterns", desc: "Examine unconscious patterns via your Pluto placement.", file: null, icon: "./pluto.svg", stage: "caterpillar" },
-      3: { title: "Step 3 - Pluto Integration Session", desc: "Discuss your patterns and plan actions in a 1:1 call.", file: null, icon: "./telephone.svg", stage: "caterpillar" },
+      3: { title: "Step 3 - Pluto Integration Session", desc: "Discuss your patterns and plan actions in a 1:1 call.", file: null, icon: telephoneIcon, stage: "caterpillar", isSvg: true },
       4: { title: "Step 4 - Shadow Work", desc: "Dive deeper into your inner transformation.", file: null, icon: "./cocoon.SvG", stage: "cocoon" },
       5: { title: "Step 5 - Growth & Integration", desc: "Integrate your insights for personal growth.", file: "Growth%20and%20Integration.pdf", icon: "./cocoon.SvG", stage: "cocoon" },
       6: { title: "Step 6 - Nodal Integration", desc: "Align with your life's purpose.", file: null, icon: "./butterfly.svg", stage: "butterfly" },
@@ -417,7 +423,7 @@
     }
 
     function saveClientProgress(clientName, step, checked) {
-      console.log(`Saving progress for ${clientName}, Step ${step}: ${checked}`); // Debug log
+      console.log(`Saving progress for ${clientName}, Step ${step}: ${checked}`);
       const progress = JSON.parse(localStorage.getItem('clientProgress') || '{}');
       progress[clientName] = progress[clientName] || {};
       progress[clientName][step] = checked;
@@ -506,7 +512,7 @@
         step.innerHTML = `
           <div class="step-content">
             <div class="step-icon">
-              <img src="${stepData.icon}" alt="${stepData.stage}">
+              ${stepData.isSvg ? stepData.icon : `<img src="${stepData.icon}" alt="${stepData.stage}">`}
             </div>
             <div class="step-details">
               <h3>${stepData.title}</h3>
