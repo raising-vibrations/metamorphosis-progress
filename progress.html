@@ -88,27 +88,93 @@
     
     .progress-container {
       margin: 2rem 0;
+      position: relative;
     }
     
     .progress-stats {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 0.75rem;
+      margin-bottom: 1rem;
       font-weight: 500;
+      color: var(--deep-blue);
     }
     
     .progress-bar {
       background: var(--light-gray);
-      border-radius: 10px;
-      height: 14px;
+      border-radius: 20px;
+      height: 20px;
       overflow: hidden;
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+      position: relative;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+    
+    .progress-bar::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, var(--golden-yellow), var(--deep-blue));
+      border-radius: 22px;
+      z-index: -1;
     }
     
     .progress-fill {
       background: linear-gradient(90deg, var(--golden-yellow), var(--deep-blue));
       height: 100%;
+      border-radius: 18px;
       transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      );
+      animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .progress-percentage-bubble {
+      position: absolute;
+      top: -30px;
+      transform: translateX(-50%);
+      background: var(--deep-blue);
+      color: var(--snow-white);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: left 1s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    
+    .progress-percentage-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid var(--deep-blue);
     }
     
     .step-list { display: grid; gap: 1rem; margin-top: 2rem; }
@@ -270,6 +336,7 @@
       .step-icon { width: 40px; height: 40px; }
       .step-icon img { width: 20px; height: 20px; }
       .download-button { padding: 5px 10px; font-size: 0.85rem; }
+      .progress-percentage-bubble { font-size: 0.8rem; padding: 3px 8px; }
     }
   </style>
 </head>
@@ -292,6 +359,7 @@
       </div>
       <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
         <div class="progress-fill" id="progress-fill"></div>
+        <div class="progress-percentage-bubble" id="progress-percentage-bubble">0%</div>
       </div>
     </div>
     
@@ -305,10 +373,10 @@
   <script>
     const phaseMap = {
       1: { title: "Step 1 - Setting Intentions", desc: "Identify what you want to accomplish.", file: "Setting Intentions.pdf", icon: "./caterpillar.svg", stage: "caterpillar" },
-      2: { title: "Step 2 - Understanding Your Core Patterns", desc: "Examine unconscious patterns via your Pluto placement.", file: null, icon: "./caterpillar.svg", stage: "caterpillar" },
+      2: { title: "Step 2 - Understanding Your Core Patterns", desc: "Examine unconscious patterns via your Pluto placement.", file: null, icon: "./pluto.svg", stage: "caterpillar" },
       3: { title: "Step 3 - Pluto Integration Session", desc: "Discuss your patterns and plan actions in a 1:1 call.", file: null, icon: "./caterpillar.svg", stage: "caterpillar" },
-      4: { title: "Step 4 - Shadow Work", desc: "Dive deeper into your inner transformation.", file: null, icon: "./cocoon.svg", stage: "cocoon" },
-      5: { title: "Step 5 - Growth & Integration", desc: "Integrate your insights for personal growth.", file: null, icon: "./cocoon.svg", stage: "cocoon" },
+      4: { title: "Step 4 - Shadow Work", desc: "Dive deeper into your inner transformation.", file: null, icon: "./cocoon.SvG", stage: "cocoon" },
+      5: { title: "Step 5 - Growth & Integration", desc: "Integrate your insights for personal growth.", file: "Growth%20and%20Integration.pdf", icon: "./cocoon.SvG", stage: "cocoon" },
       6: { title: "Step 6 - Nodal Integration", desc: "Align with your life's purpose.", file: null, icon: "./butterfly.svg", stage: "butterfly" },
       7: { title: "Step 7 - Completion", desc: "Celebrate your transformation!", file: null, icon: "./butterfly.svg", stage: "butterfly" }
     };
@@ -361,9 +429,13 @@
       const percent = Math.floor((completedCount / 7) * 100);
       const progressFill = document.getElementById('progress-fill');
       const progressPercentage = document.getElementById('progress-percentage');
+      const progressPercentageBubble = document.getElementById('progress-percentage-bubble');
       const progressBar = document.querySelector('.progress-bar');
+      
       progressFill.style.width = `${percent}%`;
       progressPercentage.textContent = `${percent}%`;
+      progressPercentageBubble.textContent = `${percent}%`;
+      progressPercentageBubble.style.left = `${percent}%`;
       progressBar.setAttribute('aria-valuenow', percent);
     }
 
@@ -414,6 +486,12 @@
           extraContent = `
             <button class="download-button" style="background: var(--golden-yellow)" onclick="window.open('https://scheduler.zoom.us/raising-vibrations-simon/metamorphosis-pluto-session-zcj9mlex', '_blank')">
               Schedule Your Session
+            </button>
+          `;
+        } else if (i === 5 && phase >= 5 && stepData.file) {
+          extraContent = `
+            <button class="download-button" onclick="window.open('./${stepData.file}', '_blank')">
+              Download Worksheet
             </button>
           `;
         }
